@@ -1,0 +1,99 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                   Investment Castle II MT4 Expert Advisor |
+//|                                        Copyright © 2022, Forex Robot Easy Team |
+//|                                               Developer's site: forexroboteasy.com |
+//+------------------------------------------------------------------+
+#property strict
+
+// Global variables
+input double TakeProfit = 50.0;    // Default take profit level
+input double StopLoss = 30.0;      // Default stop loss level
+
+// Structure to store position information
+struct SPosition
+{
+   double takeProfit;
+   double stopLoss;
+};
+
+// Array to store open positions
+SPosition positions[];
+
+//+------------------------------------------------------------------+
+//| Custom initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Load saved positions from file or memory
+   LoadPositions();
+
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Save positions to file or memory
+   SavePositions();
+}
+
+//+------------------------------------------------------------------+
+//| Custom trading function                                          |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // Trading logic goes here
+   
+   // Example: Open position
+   if(!PositionSelect('Investment Castle II'))
+   {
+      // Open a new position
+      int ticket = OrderSend(Symbol(), OP_BUY, 1.0, Ask, 0, 0, 0, 'Investment Castle II', 0, 0, Green);
+      
+      // Store position information
+      SPosition newPosition;
+      newPosition.takeProfit = Ask + TakeProfit * Point;
+      newPosition.stopLoss = Ask - StopLoss * Point;
+      
+      positions[ticket] = newPosition;
+   }
+   
+   // Example: Close position
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+      {
+         if(OrderMagicNumber() == 0 && OrderSymbol() == Symbol())
+         {
+            // Close the position
+            OrderClose(OrderTicket(), OrderLots(), Bid, 0, Red);
+            
+            // Remove position from memory
+            positions[OrderTicket()] = NULL;
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Function to load saved positions from file or memory              |
+//+------------------------------------------------------------------+
+void LoadPositions()
+{
+   // Load positions from file or memory
+   // ...
+   // positions = LoadPositionsFromFile();
+}
+
+//+------------------------------------------------------------------+
+//| Function to save positions to file or memory                      |
+//+------------------------------------------------------------------+
+void SavePositions()
+{
+   // Save positions to file or memory
+   // ...
+   // SavePositionsToFile(positions);
+}
